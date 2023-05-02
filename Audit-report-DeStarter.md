@@ -1,4 +1,4 @@
-## **[M-01]** - Mint function doesn't operate as intended and users NFTs can get stuck in the contract
+## **[M-01]** - Mint function doesn't operate as intended and NFTs can get stuck in the contract
 
 - Currently the mint function is peforming some arthimetic to try and figure out what the users NFT mint count should be based on how many NFTs they've already minted.
 
@@ -39,7 +39,7 @@ Line `87`.
 ```
 
 
-## **[L-01]** - Dividing by 1 ETH in the mint() function is unecessary as any number divided by 1 equals itself. Consider removing for better readability and less code.
+## **[L-01]** - Dividing by 1 ETH in the mint() function is unecessary. Consider removing for better readability and less code.
 
 Line `87`.
 
