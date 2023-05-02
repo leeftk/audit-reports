@@ -63,39 +63,7 @@ reason for setting safeApprove(0): https://docs.google.com/document/d/1YLPtQxZu1
 
 Use `safeApprove()` instead of `approve()`.
 
-# **[M-03]** -`call` should be used instead of `transfer`
-
-# Lines of code
-
-https://github.com/code-423n4/2023-04-rubicon/blob/511636d889742296a54392875a35e4c0c4727bb7/contracts/RubiconMarket.sol#L380
-
-https://github.com/code-423n4/2023-04-rubicon/blob/511636d889742296a54392875a35e4c0c4727bb7/contracts/RubiconMarket.sol#L381
-
-https://github.com/code-423n4/2023-04-rubicon/blob/511636d889742296a54392875a35e4c0c4727bb7/contracts/RubiconMarket.sol#L460
-
-https://github.com/code-423n4/2023-04-rubicon/blob/511636d889742296a54392875a35e4c0c4727bb7/contracts/RubiconMarket.sol#L461
-
-
-# Vulnerability details
-
-## Impact
-The use of the deprecated transfer() function for an address will inevitably make the transaction fail when:
-
-- The claimer smart contract does not implement a payable function.
-- The claimer smart contract does implement a payable fallback which uses more than 2300 gas unit.
-- The claimer smart contract implements a payable fallback function that needs less than 2300 gas units but is called through proxy, raising the call's gas usage above 2300.
-
-
-Additionally, using higher than 2300 gas might be mandatory for some multisig wallets.
-
-
-## Recommended Mitigation Steps
-
-I recommend using the low-level `call()` function instead.
-
-
-
-## **[M-05]** - `buy()` and `cancel()` ERC20 return values not checked
+## **[M-04]** - `buy()` and `cancel()` ERC20 return values not checked
 
 # Lines of code
 
@@ -120,3 +88,5 @@ Users would be able to mint NFTs for free regardless of mint fee if tokens that 
 
 ## Recommended Mitigation Steps
 Check the success boolean of all transferFrom() calls. Alternatively, use OZ’s SafeERC20’s safeTransferFrom() function.
+
+** Note this auditing contest hasn't returned results yet and so some of these submissions may be invalid.
