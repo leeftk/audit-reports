@@ -4,7 +4,7 @@ Overall the code is simple and does what as is intended. The overriding of the `
 Code coverage is above standard.
 
 ## **[M-01]** - Using `ether` to denominate an ERC20 token 
-Using Ether instead of using `10 ** 18` is a high severity issue. It can cause the contract to not actually mint the values set in the constructor.
+Using Ether instead of using `10 ** 18` is a medium severity issue. It can cause the contract to not actually mint the values set in the constructor.
 
 This would cause the contract to be unusable and have to lead to a redeployment.
 
