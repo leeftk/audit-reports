@@ -18,13 +18,13 @@ A loop without an upper bound may exceed the gas block limit and cause the deplo
     }
 ```
 
-# Remediation Steps:
+## Remediation Steps:
 Try setting an upper bound on the loop to avoid this.
 
 # [L-01] - The loop isn't checking input validation:
 A user could pass 0 as an argument for the constructor, and since `i < allowlist.length`, this would cause the deployment to fail and waste gas. Consider putting in some input validation for this array.
 
-# Remediation Steps:
+## Remediation Steps:
 Use input validation `require(array.length >= 0)` or use `i <= array.length`.
 
 # [G-01] - i++ can be changed to ++i for gas savings and can also be put in an unchecked block:
