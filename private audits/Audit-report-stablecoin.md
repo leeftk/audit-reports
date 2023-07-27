@@ -1,4 +1,4 @@
-**[H-01]** - Malicious attacker can steal users funds if fee on transfer token is used as collateral
+## **[H-01]** - Malicious attacker can steal users funds if fee on transfer token is used as collateral
 
 
 Some ERC20 tokens, such as USDT, allow for charging a fee any time transfer() or transferFrom() is called. If a contract does not allow for amounts to change after transfers, subsequent transfer operations based on the original amount will revert() due to the contract having an insufficient balance. However, a malicious user could also take advantage of this to steal funds from the pool.
@@ -76,7 +76,7 @@ Measure the contract balance before and after the call to transfer()/transferFro
 ```
 
 
-**[M-01]** - Chainlink Oracle not checking for Arbitrum Sequencer
+## **[M-01]** - Chainlink Oracle not checking for Arbitrum Sequencer
 
   If the Arbitrum Sequencer goes down, oracle data will not be kept up to date, and thus could become stale. However, users are able to continue to interact with the protocol directly through the L1 optimistic rollup contract. You can review Chainlink docs on L2 Sequencer Uptime Feeds for more details on this.
 
@@ -100,7 +100,7 @@ Because of the stale price, the protocol lets them borrow 100 USD.
 
 
 
-**[M-03]** -  Rebasing tokens go to the pool owner, or remain locked in the various contracts
+## **[M-03]** -  Rebasing tokens go to the pool owner, or remain locked in the various contracts
 
 Summary
 
@@ -117,7 +117,7 @@ Provide a function for the pool owner to withdraw excess deposited tokens and re
 
 
 
-**[L-01]** - RedeemCollateral will revert if passed an amount greater than users deposited collateral
+## **[L-01]** - RedeemCollateral will revert if passed an amount greater than users deposited collateral
 
 The function `redeemCollateral()` will revert due to overflow if the user passes an amount that is greater than their current deposited collateral. Though this is intended behavior it would be useful to the user if you added a check that verfied that the amount they are attempting to withdraw is greater than or equal to the current amount deposited. This will allow you to throw a useful error message if it isn't.
 
@@ -142,12 +142,12 @@ Consider adding a check that reverts if the amount being passed is greater than 
     }
 
 ```
-**[L-02]** - Constructor should contain zero address checks for the priceFeedAddress and tokenAddress
+## **[L-02]** - Constructor should contain zero address checks for the priceFeedAddress and tokenAddress
 
-**[L-02]** - Constructor should contain zero address checks for the priceFeedAddress and tokenAddress
+## **[L-02]** - Constructor should contain zero address checks for the priceFeedAddress and tokenAddress
 
 
-**[L-03]** - Precision loss if collateralValueInUSD = 1 user with 1 dollar of collateral can be liquidated due to precision loss
+## **[L-03]** - Precision loss if collateralValueInUSD = 1 user with 1 dollar of collateral can be liquidated due to precision loss
 ```
     function _calculateHealthFactor(uint256 totalDscMinted, uint256 collateralValueInUsd)
         internal
@@ -170,9 +170,9 @@ Consider checking if collateralValueInUsd = 1 and if it does then return 1 inste
 
 
 
-**[G-01]** - Multiple mappings can be combined into a single mapping of a value to a struct
+## **[G-01]** - Multiple mappings can be combined into a single mapping of a value to a struct
 
-**[G-02]** - Cache amount value outside of loop so that you don't have to look it up in each iteration.
+## **[G-02]** - Cache amount value outside of loop so that you don't have to look it up in each iteration.
 
 
 Line [359](https://github.com/Cyfrin/2023-07-foundry-defi-stablecoin/blob/d1c5501aa79320ca0aeaa73f47f0dbc88c7b77e2/src/DSCEngine.sol#L353) of DSCEngine.sol can be optimized. By caching uint256 `amount = s_collateralDeposited[user][token];` outside of the loop.
@@ -184,7 +184,7 @@ Line [359](https://github.com/Cyfrin/2023-07-foundry-defi-stablecoin/blob/d1c550
             totalCollateralValueInUsd += getUsdValue(token, amount);
         }
 ```
-**[G-02]** - `++i` can be unchecked since it isn't vulnerable to overflow
+## **[G-02]** - `++i` can be unchecked since it isn't vulnerable to overflow
 
 Line [359](https://github.com/Cyfrin/2023-07-foundry-defi-stablecoin/blob/d1c5501aa79320ca0aeaa73f47f0dbc88c7b77e2/src/DSCEngine.sol#L353) of DSCEngine.sol can be optimized. `++i` can be unchecked as there's no risk of overflow.
 
