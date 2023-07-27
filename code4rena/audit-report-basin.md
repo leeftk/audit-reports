@@ -41,7 +41,7 @@ Line 214 of Well.sol calculates the price of tokens to tokens in the  pool based
 Pool balances at a single point in time can be manipulated with flash loans, which can skew the numbers to the extreme. The single data point of LP balances is used to calculate the amountOut in line 231, and the amountOut influences the quantity of tokens a user receives in the transfer on line 236.
 
 An attacker can take out a flashloan in order to increase the value of reserveJBefore. The attacker can then temporarliy increase the amout of reserveJ in the pool and then swap reserve[i] for reserveJ.`_swapFrom` will take the reservesBefore and subtract it from the current reserves. Since reserveJ is higher then usual do to the flashloan when amountOut is calculated it will cause the pool to be drained giving the attacker more tokens then then should be getting.
-## Remediation 
+### Remediation 
 
 Use a short TWAP to calculate the trade size instead of reading directly from the pool.
 
@@ -61,12 +61,12 @@ Some ERC20 tokens have multiple valid contract addresses that serve as entrypoin
 ```
 Its clear that the devs did not intend for the same token to be registered in the same well however this will occur if tokens with multiple addresses is used.
 
-# References 
+### References 
 
 https://github.com/d-xo/weird-erc20#revert-on-zero-value-transfers
 
 
-## Remediation
+### Remediation
 
 Create a blocklist for tokens that use multiple addresses and check that the tokens being set upon deployment are not on this list.
 
@@ -121,7 +121,7 @@ Line 436 in `Well.sol` calls the function `_calcLpTokenSupply()` is be called by
 
 As you can see from the failing test above.LP tokens out will not be able to be calculated if the amount of reserve tokens is too high causing the add liquidity function to revert after a Well contract has been deployed.
 
-## Remediation Steps
+### Remediation Steps
 
 Best way to remediate against this is to set an upper limit on the amount of tokens that can be added to a well. 
 
@@ -147,7 +147,7 @@ Finally, Alice's transaction is completed and she gets:
 
 When Bob then withdraws he will take half of Alice's shares. Below is a POC that shows the following attack.
 
-## Remediation 
+### Remediation 
 
 Check if the total supply of the LP token is zero and if it is mint 1000 WEI worth of LP tokens and send it to the 0 address.
 
@@ -166,11 +166,11 @@ amountIn in `_addLiquidity()` can be zero, and there is no check in place to ver
 
 This way, a combination of a well with this token set as one of its reserves  will revert any calls made to `_addLiquidity()` rendering contract functionality unavailable.
 
-## References
+### References
 
 https://github.com/d-xo/weird-erc20#revert-on-zero-value-transfers
 
-# Remediation
+### Remediation
 
 Verify that amount in is greater than zero before calling `safeTransfer()`.
 
