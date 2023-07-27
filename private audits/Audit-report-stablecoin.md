@@ -144,9 +144,6 @@ Consider adding a check that reverts if the amount being passed is greater than 
 ```
 ## **[L-02]** - Constructor should contain zero address checks for the priceFeedAddress and tokenAddress
 
-## **[L-02]** - Constructor should contain zero address checks for the priceFeedAddress and tokenAddress
-
-
 ## **[L-03]** - Precision loss if collateralValueInUSD = 1 user with 1 dollar of collateral can be liquidated due to precision loss
 ```
     function _calculateHealthFactor(uint256 totalDscMinted, uint256 collateralValueInUsd)
