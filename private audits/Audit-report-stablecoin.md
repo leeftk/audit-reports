@@ -183,7 +183,7 @@ Line [359](https://github.com/Cyfrin/2023-07-foundry-defi-stablecoin/blob/d1c550
             totalCollateralValueInUsd += getUsdValue(token, amount);
         }
 ```
-## **[G-02]** - `++i` can be unchecked since it isn't vulnerable to overflow
+## **[G-03]** - `++i` can be unchecked since it isn't vulnerable to overflow
 
 Line [359](https://github.com/Cyfrin/2023-07-foundry-defi-stablecoin/blob/d1c5501aa79320ca0aeaa73f47f0dbc88c7b77e2/src/DSCEngine.sol#L353) of DSCEngine.sol can be optimized. `++i` can be unchecked as there's no risk of overflow.
 
