@@ -100,7 +100,7 @@ Because of the stale price, the protocol lets them borrow 100 USD.
 
 
 
-## **[M-03]** -  Rebasing tokens go to the pool owner, or remain locked in the various contracts
+## **[M-02]** -  Rebasing tokens go to the pool owner, or remain locked in the various contracts
 
 Summary
 
@@ -143,6 +143,8 @@ Consider adding a check that reverts if the amount being passed is greater than 
 
 ```
 ## **[L-02]** - Constructor should contain zero address checks for the priceFeedAddress and tokenAddress
+
+Consider adding zero address checks to avoid redeployment.
 
 ## **[L-03]** - Precision loss if collateralValueInUSD = 1 user with 1 dollar of collateral can be liquidated due to precision loss
 ```
