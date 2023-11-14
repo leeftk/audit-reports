@@ -2,7 +2,7 @@
 
 The code is very well written. No major issues were found, and the natspec comments were super helpful in understanding the code. The simplicity of the code made it easy to digest and audit.
 
-# **[M-01]** - The loop in the constructor has no upper bound:
+# **[L-01]** - The loop in the constructor has no upper bound:
 A loop without an upper bound may exceed the gas block limit and cause the deployment of the contract to fail.
 
 ```
@@ -22,7 +22,7 @@ A loop without an upper bound may exceed the gas block limit and cause the deplo
 ## Remediation Steps:
 Try setting an upper bound on the loop to avoid this.
 
-# **[L-01]** - The loop isn't checking input validation:
+# **[L-02]** - The loop isn't checking input validation:
 A user could pass 0 as an argument for the constructor, and since `i < allowlist.length`, this would cause the deployment to fail and waste gas. Consider putting in some input validation for this array.
 
 ## Remediation Steps:
