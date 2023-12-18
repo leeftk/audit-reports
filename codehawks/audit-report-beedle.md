@@ -1,26 +1,23 @@
-**[H-1]** - DOS due to unbounded loop
+**[H-1]** - Rebasing tokens go to the pool owner, or remain locked in the various contracts
 
 ## Summary
 
-The `borrow()` function allows users to create a loan, which subsequently gets added to the `loans` array. The original design intended for a loan to be removed from the array when either `seizeLoan` or `repayLoan` is called. However, the current implementation uses the `delete` keyword, which only sets `loans[loanId]` to the default value of zero, leaving the loan in the `loans` array. If a large number of loans are created, this could cause transactions to revert, making loans impossible to repay.
+Rebasing tokens are tokens that have each holder's balanceof() increase over time. Aave aTokens are an example of such tokens.
 
 
 ## Vulnerability Details
 
-A user's collateral could be permanently locked in the contract. The `repay` transaction would revert when called if the array length is too large due to the gas needing to iterate being greater than the block gas limit. This would render loan repayment impossible, causing a DOS. The lender would also be left without a means to liquidate the owner if another lender doesn't buy the loan, as invoking `seizeLoan` would also revert and cause a DOS.
+Users expect that when they deposit tokens to a pool, that they get back all rewards earned, not just a flat rate. With the contracts of this project, deposited tokens will grow in value, but the value in excess of the pre-calculated `s_collateralDeposited[msg.sender][tokenCollateralAddress] += amountCollateral;` amounts go solely to the owner/creator, or will remain locked in the contract
 
-
-## Impact
-
-This would stop loans from being able to be seized. Meaning a buyer would not run the risk of being liquidated. A user wouldn't have a way to repay there loan since the transaction would always revert and cause a DOS and the lender wouldn't have a method of liquidating the owner if another lender doesn't buy the loan, as calling `seizeLoan` would also revert and cause a DOS. This would leave a users collateral forever locked in a contract.
+If rebasing tokens are used as the collateral token, rewards accrue to the contract and cannot be withdrawn by either the user or the owner, and remain locked forever.
 
 ## Tools Used
 
-This issue was identified through a manual review of the code.
+Manual Review
 
-## Recommendations
+## Recommended Steps
 
-To address this issue, I recommend modifying the way elements are removed from the array. Instead of using `delete`, consider using the `pop()` function. This will effectively remove the element from the array, preventing the array from growing indefinitely and mitigating the potential risks outlined above.
+Provide a function for the pool owner to withdraw excess deposited tokens and repay any associated taxes.
 
 **[H-2]** - Missing slippage checks
 
@@ -61,90 +58,8 @@ This issue was identified through a manual review of the code.
 
 Add some sort of protection for the user such that they receive their desired amounts. Add a minimum return amount for all swap and liquidity provisions/removals to all Router functions.
 
-**[H-3]** - Precision loss when calculating interest can lead to zero interest loans
 
-## Summary
-
-When the `_calculateInterest` function is called precision loss can occur if the `interestRate`, `debt`, and `timeElapsed` are too small 
-
-## Vulnerability Details
-The equation below can incur precision loss when attempting to calculate the interest and the fees for a given loan. 
-
-Let's say the interest on a loan is set to 1%. With a debt of 5 and a time elapsed of 3 days. The math would be as follows.
-
-100 * 5 * 10 = 50000 / 10000 = 0 / 365 days
-
-```
-        interest = (l.interestRate * l.debt * timeElapsed) / 10000 / 365 days;
-        fees = (lenderFee * interest) / 10000;
-        interest -= fees;
-```
-Leaving us with an interest rate of zero and a protocol fee of zero as well. This would allow users to take out interest free loans.
-
-
-## Impact
-
-A user would be able to take out interest free loans and the protocol would not collect fees either causing a loss of funds to the lenders and the protocols.
-
-
-## Recommended Steps
-
-It's important to remember that the protocol's objective isn't to facilitate zero-interest loans. Therefore, verifying that neither the interest rate nor the fees are zero can help prevent precision loss and trigger a reversal if necessary. Additionally, establishing a minimum loan size could ensure that the left side of the equation consistently exceeds the right side.
-
-```
- interest = (l.interestRate * l.debt * timeElapsed) / 10000 / 365 days;
-
-        fees = (lenderFee * interest) / 10000;
-        if(interest == 0 || fees == 0) revert PrecisionLoss();
-        interest -= fees;
-
-```
-
-
-**[H-4]** - Loss of funds to protocol and lenders due to precision loss
-
-## Summary
-
-When the `_calculateInterest` function is called precision loss can occur if the `interestRate`, `debt`, and `timeElapsed` are too small 
-
-## Vulnerability Details
-The equation below can incur precision loss when attempting to calculate the interest and the fees for a given loan. 
-
-Let's say the interest on a loan is set to 1%. With a debt of 5 and a time elapsed of 3 days. The math would be as follows.
-
-100 * 5 * 10 = 50000 / 10000 = 0 / 365 days
-
-```
-        interest = (l.interestRate * l.debt * timeElapsed) / 10000 / 365 days;
-        fees = (lenderFee * interest) / 10000;
-        interest -= fees;
-```
-
-Leaving us with an interest rate of zero and a protocol fee of zero as well. This would allow users to take out interest-free loans.
-
-
-## Impact
-
-A user would be able to take out interest-free loans and the protocol would not collect fees either causing a loss of funds to the lenders and the protocols.
-
-## Tools Used
-
-Manual review.
-## Recommendations
-
-It's important to remember that the protocol's objective isn't to facilitate zero-interest loans. Therefore, verifying that neither the interest rate nor the fees are zero can help prevent precision loss and trigger a reversal if necessary. Additionally, establishing a minimum loan size could ensure that the left side of the equation consistently exceeds the right side.
-
-```
- interest = (l.interestRate * l.debt * timeElapsed) / 10000 / 365 days;
-
-        fees = (lenderFee * interest) / 10000;
-        if(interest == 0 || fees == 0) revert PrecisionLoss();
-        interest -= fees;
-
-```
-
-
-**[H-5]** - Fee on transfer tokens can cause lender tokens to get stuck in contract.
+**[H-3]** - Fee on transfer tokens can cause lender tokens to get stuck in contract.
 
 
 Some ERC20 tokens, such as USDT, allow for charging a fee any time transfer() or transferFrom() is called. If a contract does not allow for amounts to change after transfers, subsequent transfer operations based on the original amount will revert() due to the contract having an insufficient balance. However, a malicious user could also take advantage of this to steal funds from the pool.
@@ -217,57 +132,92 @@ Measure the contract balance before and after the call to transfer()/transferFro
         IERC20(pools[poolId].loanToken).transfer(msg.sender, amount);
     }
 ```
-
-**[H-6]** - Fee on transfer tokens in staking contract
+**[M-1]** - Precision loss when calculating interest can lead to zero interest loans
 
 ## Summary
 
-The `_calculateInterest` function is vulnerable to precision loss. Due to dividing twice the function will return zero for both interest and protocolInterest. This could lead to a lender giving there loan to another pool that doesn't have the balance to cover it. Leading to a loss for them an a gain to the future pools has they will have debts greater than their balance.
+When the `_calculateInterest` function is called precision loss can occur if the `interestRate`, `debt`, and `timeElapsed` are too small 
 
 ## Vulnerability Details
+The equation below can incur precision loss when attempting to calculate the interest and the fees for a given loan. 
+
+Let's say the interest on a loan is set to 1%. With a debt of 5 and a time elapsed of 3 days. The math would be as follows.
+
+100 * 5 * 10 = 50000 / 10000 = 0 / 365 days
+
+```
+        interest = (l.interestRate * l.debt * timeElapsed) / 10000 / 365 days;
+        fees = (lenderFee * interest) / 10000;
+        interest -= fees;
+```
+Leaving us with an interest rate of zero and a protocol fee of zero as well. This would allow users to take out interest free loans.
+
+
+## Impact
+
+A user would be able to take out interest free loans and the protocol would not collect fees either causing a loss of funds to the lenders and the protocols.
 
 
 ## Recommended Steps
 
-Consider capping the supply or removing the mint function so that the owner has a max supply they can mint or they cannot mint anymore tokens after the contract is deployed.
+It's important to remember that the protocol's objective isn't to facilitate zero-interest loans. Therefore, verifying that neither the interest rate nor the fees are zero can help prevent precision loss and trigger a reversal if necessary. Additionally, establishing a minimum loan size could ensure that the left side of the equation consistently exceeds the right side.
+
+```
+ interest = (l.interestRate * l.debt * timeElapsed) / 10000 / 365 days;
+
+        fees = (lenderFee * interest) / 10000;
+        if(interest == 0 || fees == 0) revert PrecisionLoss();
+        interest -= fees;
+
+```
 
 
-## Recommended Steps
-
-Consider capping the supply or removing the mint function so that the owner has a max supply they can mint or they cannot mint anymore tokens after the contract is deployed.
-
-
-**[M-7]** - Rebasing tokens go to the pool owner, or remain locked in the various contracts
+**[M-2]** - Loss of funds to protocol and lenders due to precision loss
 
 ## Summary
 
-Rebasing tokens are tokens that have each holder's balanceof() increase over time. Aave aTokens are an example of such tokens.
-
+When the `_calculateInterest` function is called precision loss can occur if the `interestRate`, `debt`, and `timeElapsed` are too small 
 
 ## Vulnerability Details
+The equation below can incur precision loss when attempting to calculate the interest and the fees for a given loan. 
 
-Users expect that when they deposit tokens to a pool, that they get back all rewards earned, not just a flat rate. With the contracts of this project, deposited tokens will grow in value, but the value in excess of the pre-calculated `s_collateralDeposited[msg.sender][tokenCollateralAddress] += amountCollateral;` amounts go solely to the owner/creator, or will remain locked in the contract
+Let's say the interest on a loan is set to 1%. With a debt of 5 and a time elapsed of 3 days. The math would be as follows.
 
-If rebasing tokens are used as the collateral token, rewards accrue to the contract and cannot be withdrawn by either the user or the owner, and remain locked forever.
+100 * 5 * 10 = 50000 / 10000 = 0 / 365 days
+
+```
+        interest = (l.interestRate * l.debt * timeElapsed) / 10000 / 365 days;
+        fees = (lenderFee * interest) / 10000;
+        interest -= fees;
+```
+
+Leaving us with an interest rate of zero and a protocol fee of zero as well. This would allow users to take out interest-free loans.
+
+
+## Impact
+
+A user would be able to take out interest-free loans and the protocol would not collect fees either causing a loss of funds to the lenders and the protocols.
 
 ## Tools Used
 
-Manual Review
+Manual review.
+## Recommendations
 
-## Recommended Steps
+It's important to remember that the protocol's objective isn't to facilitate zero-interest loans. Therefore, verifying that neither the interest rate nor the fees are zero can help prevent precision loss and trigger a reversal if necessary. Additionally, establishing a minimum loan size could ensure that the left side of the equation consistently exceeds the right side.
 
-Provide a function for the pool owner to withdraw excess deposited tokens and repay any associated taxes.
+```
+ interest = (l.interestRate * l.debt * timeElapsed) / 10000 / 365 days;
+
+        fees = (lenderFee * interest) / 10000;
+        if(interest == 0 || fees == 0) revert PrecisionLoss();
+        interest -= fees;
+
+```
 
 
 **[L-1]** - No events are used in Staking.sol
 
-
-
-
- **[L-2]** - Staking.sol should use more input validation to improve user experience
-
-
-
+**[L-2]** - Staking.sol should use more input validation to improve user experience
 
 **[L-3]** - Seize is misspelled in the comments and in the `LoanSiezed` event
 
