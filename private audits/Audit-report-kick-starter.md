@@ -1,3 +1,5 @@
+Date - 4/10/23
+
 ## **[M-01]** - Mint function doesn't operate as intended and NFTs can get stuck in the contract
 
 - Currently the mint function is peforming some arthimetic to try and figure out what the users NFT mint count should be based on how many NFTs they've already minted.
