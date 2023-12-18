@@ -39,20 +39,6 @@ Line `87`.
 ```
 
 
-## **[L-01]** - Dividing by 1 ETH in the mint() function is unecessary. Consider removing for better readability and less code.
-
-Line `87`.
-
-```
-    function mint() public {
-        uint amountToMint = userContributions[msg.sender] - mintedByContributor[msg.sender];
-
-        mintedByContributor[msg.sender] += amountToMint;
-        for (uint i = 0; i < amountToMint; i++) {
-            _safeMint(msg.sender, tokenId++);
-        }
-```
-
 ## **[G-01]** - Variables can be set to their default values in order to save gas. `bool` default value is `false` and `uint` default value is `0`.
 
 ```
