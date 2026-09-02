@@ -22,13 +22,32 @@ I'm available for Smart Contract Auditing and Development, please reach out belo
 
 | Overall | High risk | Medium risk | Audited contests | Private Audits |
 |:--:|:--:|:--:|:--:|:--:|
-| 85 High/Medium | 37 High | 67 Medium | 4 | 24 |
+| 85 High/Medium | 37 High | 67 Medium | 4 | 27 |
 
 ---
 
 <div style="text-align: left;">
 
 <table style="table-layout: fixed; width: 100%; border-collapse: collapse;">
+
+<!-- Latest Audits -->
+<tr>
+  <td width="12%" valign="middle" style="background:#f5f5f5; text-align:left; padding:10px;">
+    <h3 style="margin:0;"> Latest Audits</h3>
+  </td>
+  <td width="29%" valign="top" style="text-align:left;">
+    <a href="https://github.com/leeftk/audit-reports/blob/main/private%20audits/american-spend-elastic-markets-audit-report.pdf" target="_blank">American Spend</a>
+    <img src="https://img.shields.io/badge/-3_H_10_M-5924e1?style=flat" />
+  </td>
+  <td width="29%" valign="top" style="text-align:left;">
+    <a href="https://github.com/leeftk/audit-reports/blob/main/private%20audits/american-spend-elastic-markets-ledger-audit-report.pdf" target="_blank">Elastic Markets Ledger</a>
+    <img src="https://img.shields.io/badge/-2_H_9_M-5924e1?style=flat" />
+  </td>
+  <td width="30%" valign="top" style="text-align:left;">
+    <a href="https://github.com/leeftk/audit-reports/blob/main/private%20audits/token-haven-security-audit-report.pdf" target="_blank">Token Haven</a>
+    <img src="https://img.shields.io/badge/-5_H_6_M-5924e1?style=flat" />
+  </td>
+</tr>
 
 <!-- Staking & DeFi -->
 <tr>
@@ -121,10 +140,18 @@ I'm available for Smart Contract Auditing and Development, please reach out belo
 | [BackGeoOracle](https://rigoblock.com/) | 2 | 0 | [PDF](private%20audits/audit-report-backgeooracle.pdf) |
 | [FM Oracle Redeeming](https://rigoblock.com/) | 2 | 0 | [PDF](private%20audits/audit-report-fm-oracle-redeeming.pdf) |
 
+### Prediction Markets
+
+| Project | High | Medium | Report |
+| ------- | :--: | :----: | ------ |
+| [American Spend — Elastic Markets](https://github.com/americanspend/markets) | 3 | 10 | [PDF](private%20audits/american-spend-elastic-markets-audit-report.pdf) |
+| [American Spend — Elastic Markets Ledger](https://github.com/americanspend/markets) | 2 | 9 | [PDF](private%20audits/american-spend-elastic-markets-ledger-audit-report.pdf) |
+
 ### Protocols & Others
 
 | Project | High | Medium | Report |
 | ------- | :--: | :----: | ------ |
+| Token Haven | 5 | 6 | [PDF](private%20audits/token-haven-security-audit-report.pdf) |
 | [FortuneFi](https://fortunefi.io/) | 6 | 7 | [PDF](private%20audits/FortuneFi-audit-report.pdf) |
 | [SwitchX](https://switchx.io/) | 3 | 0 | [PDF](private%20audits/SwitchX-audit-report%20(1).pdf) |
 | [VII Finance](https://vii.finance/) | 0 | 0 | [PDF](private%20audits/VII-Finance-audit-report.pdf) |
