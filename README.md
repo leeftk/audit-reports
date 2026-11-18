@@ -111,6 +111,19 @@ I'm available for Smart Contract Auditing and Development, please reach out belo
 
 ---
 
+## 33Labs Security Audit Reports
+
+Published reports maintained by [33Labs](https://33labs.ai).
+
+| Project | Report |
+| ------- | ------ |
+| American Spend | [PDF](reports/american-spend-security-audit-report.pdf) |
+| BackedFund | [PDF](reports/backedfund-security-audit-report.pdf) |
+| Elastic Markets | [PDF](reports/elastic-markets-security-audit-report.pdf) |
+| Recoup | [PDF](reports/recoup-security-audit-report.pdf) |
+
+---
+
 ## All 33Audits Private Audits
 
 ### Staking & DeFi
